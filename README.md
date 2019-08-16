@@ -1,1 +1,2 @@
 # jsgame
+Suthon Sae-wong
