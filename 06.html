@@ -1,0 +1,23 @@
+<html>
+    <head>        
+    </head>
+    <body>
+        <canvas id="paper" width="400" height="400">            
+        </canvas>
+    </body>
+    <script>
+        class Sprite {
+            constructor(name){
+                this.name = name
+            }
+            greet(){
+                console.log('My name is', this.name)
+            }
+        }
+        let s1 = new Sprite("A1")
+        let s2 = new Sprite("A2")
+        s2.greet()
+        s1.greet()
+        
+    </script>
+</html>
