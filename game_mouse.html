@@ -1,0 +1,147 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<button onclick="startGame()">New</button>
+	<div id="score">0</div>
+	<canvas id="paper" width="400" height="400">
+	</canvas>
+</body>
+	<script type="text/javascript">		
+		var canvas = document.getElementById("paper");
+		var targetX = canvas.width / 2;
+		var targetY = canvas.height / 2;
+		var ship =  {
+			x: 0, 
+			y: 0,
+			radius: 5,
+			color: 'red',
+			v: 100,
+			moveTo: function(x, y, ms){
+				var st = this.v * ms / 1000;
+				var diffy = y - this.y;
+				var diffx = x - this.x;
+				var zeta = Math.atan(Math.abs((y - this.y)/(x - this.x)));				
+				var dy = diffy < 0 ? - 1 : 1;
+				var dx = diffx < 0 ? -1 : 1;				
+				if(!isNaN(zeta)){
+					this.x += Math.cos(zeta) * st * dx;
+					this.y += Math.sin(zeta) * st * dy;	
+				}
+				if(this.x > canvas.width)
+					this.x = canvas.width;
+				else if (this.x < 0)
+					this.x = 0;
+				if(this.y > canvas.height)
+					this.y = canvas.height;
+				else if(this.y < 0)
+					this.y = 0;	
+			}
+		};		
+		var enemies = [];
+		var gameRunning = false;
+
+		var lastStamp = 0;
+		var score = 0;
+		
+		setInterval(function(){
+			var deadEnemyIndices = [];
+			for(var i = 0; i < enemies.length; i++){
+				enemies[i].live(1000);
+				if(!enemies[i].isAlive())
+					deadEnemyIndices.push(i);
+			}
+			for(var i = deadEnemyIndices.length; i > 0; i--){
+				enemies.splice(deadEnemyIndices[i], 1);
+			}
+			enemies.push(new Enemy());
+			score += 1;
+			document.getElementById('score').innerHTML = '' + score;
+		}, 1000);
+		function draw(){
+			if(gameRunning){			
+				var currentStamp = new Date().getTime();
+				if(lastStamp != 0){
+					var ms = currentStamp - lastStamp;
+					ship.moveTo(targetX, targetY, ms);
+				}
+				if(isHit()){
+		        	console.log('Game Over');
+		        	gameRunning = false;
+		        }
+
+				var context = canvas.getContext('2d');
+				context.clearRect(0, 0, canvas.width, canvas.height);	
+				context.beginPath();
+		        context.arc(ship.x, ship.y, ship.radius, 0, 2 * Math.PI, false);
+		        context.fillStyle = ship.color;
+		        context.fill();
+
+		        for(var i = 0; i < enemies.length; i++){
+		        	context.beginPath();
+			        context.arc(enemies[i].x, enemies[i].y, enemies[i].radius, 0, 2 * Math.PI, false);
+			        context.fillStyle = 'blue';
+			        context.fill();
+		        }
+		      
+				lastStamp = currentStamp;
+			}
+			window.requestAnimationFrame(draw);
+		}
+		window.requestAnimationFrame(draw);
+
+		function isHit(){
+			for(var i = 0; i < enemies.length; i++){
+				if(distance(enemies[i].x, enemies[i].y,
+					ship.x, ship.y) <= ship.radius + enemies[i].radius){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		function distance(x1, y1, x2, y2){
+			return Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+		}
+
+		function onClick(x, y){
+			console.log(x + ":" + y);
+		}
+
+		function startGame(){
+			ship.x = canvas.width / 2;
+			ship.y = canvas.height / 2;
+			gameRunning = true;
+			score = 0;
+		}
+		
+        canvas.addEventListener('mousemove', function(evt) {
+	        var rect = canvas.getBoundingClientRect();
+	        targetX = evt.clientX - rect.left;
+	        targetY = evt.clientY - rect.top;	 
+      	}, false);
+
+      	canvas.addEventListener('mousedown', function(evt) {
+	        var rect = canvas.getBoundingClientRect();
+	        var x = evt.clientX - rect.left;
+	        var y = evt.clientY - rect.top;	 
+	        onClick(x, y);
+      	}, false);
+
+		class Enemy {
+			constructor(){
+				this.x = Math.floor(Math.random()*canvas.width);
+				this.y = Math.floor(Math.random()*canvas.height);
+				this.lifetime = 3000;
+				this.radius = 5;      		
+			}
+			live(ms){
+				this.lifetime -= ms;
+			}
+			isAlive(){
+				return this.lifetime > 0; 
+			}
+		}
+	</script>
+</html>
