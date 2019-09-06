@@ -1,0 +1,75 @@
+<html>
+
+<head>
+</head>
+
+<body>
+    <canvas id="paper" width="400" height="400">            
+        </canvas>
+</body>
+<script>
+    let canvas = document.getElementById("paper")
+    let ctx = canvas.getContext('2d')
+
+    class Sprite {
+        constructor(color, x, y, heading, speed) {
+            this.color = color
+            this.y = y
+            this.x = x
+            this.heading = heading
+            this.speed = speed
+        }
+        moveAndPaint(diff) {
+            if (this.x >= canvas.width) {
+                if (this.heading > 0)
+                    this.heading += 90
+                else
+                    this.heading -= 90
+            } else if (this.x <= 0) {
+                if (this.heading > 0)
+                    this.heading -= 90
+                else
+                    this.heading += 90
+            }
+            if (this.y >= canvas.height || this.y <= 0) {
+                this.heading *= -1
+            }
+
+            let s = (this.speed * diff) / 1000 //s = vt
+            let degree = Math.PI * this.heading / 180;
+            this.x = this.x + Math.cos(degree) * s
+            this.y = this.y + Math.sin(degree) * s
+
+            this.x = Math.min(this.x, canvas.width)
+            this.x = Math.max(this.x, 0)
+            this.y = Math.min(this.y, canvas.height)
+            this.y = Math.max(this.y, 0)
+
+            ctx.fillStyle = this.color
+            ctx.fillRect(Math.round(this.x), Math.round(this.y), 5, 5)
+        }
+    }
+
+    let sprites = [
+        new Sprite('red', 5, 10, 30, 300),
+        new Sprite('green', 40, 30, 45, 120),
+        new Sprite('blue', 200, 50, -40, 90),
+        new Sprite('#ee7722', 80, 70, 160, 100),
+        new Sprite('#00ffff', 300, 90, -70, 150)
+    ]
+    let lastFrameStamp = new Date().getTime()
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        let now = new Date().getTime()
+        let diff = now - lastFrameStamp
+        for (let sprite of sprites)
+            sprite.moveAndPaint(diff)
+
+        window.requestAnimationFrame(draw)
+        lastFrameStamp = now
+    }
+    window.requestAnimationFrame(draw)
+</script>
+
+</html
